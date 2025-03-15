@@ -7,63 +7,69 @@ on:
     branches: [ main, master ]
 
 jobs:
-  # Phase de test et build
   build:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
     
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16'
-        
-    # Installation Backend
+        node-version: '18'
+        cache: 'npm'
+    
     - name: Install backend dependencies
       run: |
-        cd backend
-        npm install
-        
-    # Tests simulés Backend  
+        if [ -d "backend" ]; then
+          cd backend
+          npm ci
+        else
+          echo "\u26A0\uFE0F Le dossier backend est introuvable"
+          exit 1
+        fi
+      
     - name: Run backend tests
       run: |
         cd backend
-        echo "Tests backend simulés avec succès"
-        exit 0
-      
-    # Installation Frontend
+        npm test || { echo "\u274C Tests backend échoués"; exit 1; }
+    
     - name: Install frontend dependencies
       run: |
-        cd frontend
-        npm install
-        
-    # Tests simulés Frontend
+        if [ -d "frontend" ]; then
+          cd frontend
+          npm ci
+        else
+          echo "\u26A0\uFE0F Le dossier frontend est introuvable"
+          exit 1
+        fi
+      
     - name: Run frontend tests
       run: |
         cd frontend
-        echo "Tests frontend simulés avec succès"
-        exit 0
-        
-    # Build de l'application
+        npm test || { echo "\u274C Tests frontend échoués"; exit 1; }
+      
     - name: Build frontend
       run: |
         cd frontend
-        npm run build || echo "Build simulé avec succès" && exit 0
-        
-    # Création de l'image Docker simulée
+        npm run build || { echo "\u274C Build échoué"; exit 1; }
+      
     - name: Build Docker image
       run: |
-        echo "Construction de l'image Docker simulée"
-        # docker build -t gestion-etablissement:latest .
-        exit 0
+        if command -v docker &> /dev/null; then
+          echo "\u2705 Docker est installé"
+          echo "Construction de l'image Docker..."
+          docker build -t gestion-etablissement:latest .
+        else
+          echo "\u26A0\uFE0F Docker n'est pas installé ou pas accessible"
+          exit 1
+        fi
       
-    # Déploiement en environnement de développement (simulé)
     - name: Deploy to Dev
       run: |
-        echo "Deployment to Dev environment successful"
-        
-  # Déploiement en production (simplifié)
+        echo "\u2705 Deployment to Dev environment successful"
+
   deploy-prod:
     needs: build
     runs-on: ubuntu-latest
@@ -71,4 +77,4 @@ jobs:
     steps:
     - name: Deploy to Production
       run: |
-        echo "Deployment to Production environment successful"
+        echo "\u2705 Deployment to Production environment successful"
