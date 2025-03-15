@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  # === Tests Backend ===
+  # === Tests Backend === SAHAL
   test-backend:
     runs-on: windows-latest
     steps:
@@ -34,7 +34,7 @@ jobs:
           npm test
         shell: pwsh
 
-  # === Tests Frontend ===
+  # === Tests Frontend === SAHAL
   test-frontend:
     runs-on: windows-latest
     steps:
@@ -59,7 +59,7 @@ jobs:
           npm run test
         shell: pwsh
 
-  # === Build Backend ===
+  # === Build Backend === SAHAL
   build-backend:
     needs: test-backend
     runs-on: windows-latest
