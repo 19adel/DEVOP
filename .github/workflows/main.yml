@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  # === Tests Backend === SAHAL
+  # === Tests Backend === 
   test-backend:
     runs-on: windows-latest
     steps:
@@ -23,18 +23,16 @@ jobs:
           cache: 'npm'
 
       - name: Install backend dependencies
-        run: |
-          cd backend
-          npm install
+        run: npm install
+        working-directory: backend
         shell: pwsh
 
       - name: Run backend tests
-        run: |
-          cd backend
-          npm test
+        run: npm test
+        working-directory: backend
         shell: pwsh
 
-  # === Tests Frontend === SAHAL
+  # === Tests Frontend === 
   test-frontend:
     runs-on: windows-latest
     steps:
@@ -48,18 +46,16 @@ jobs:
           cache: 'npm'
 
       - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm install
+        run: npm install
+        working-directory: frontend
         shell: pwsh
 
       - name: Run frontend tests (Cypress)
-        run: |
-          cd frontend
-          npm run test
+        run: npm run test
+        working-directory: frontend
         shell: pwsh
 
-  # === Build Backend === SAHAL
+  # === Build Backend === 
   build-backend:
     needs: test-backend
     runs-on: windows-latest
@@ -68,9 +64,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build backend
-        run: |
-          cd backend
-          npm run build
+        run: npm run build
+        working-directory: backend
         shell: pwsh
 
       - name: Save backend artifact
@@ -79,7 +74,7 @@ jobs:
           name: backend-artifact
           path: backend/dist/
 
-  # === Build Frontend ===
+  # === Build Frontend === 
   build-frontend:
     needs: test-frontend
     runs-on: windows-latest
@@ -88,9 +83,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
+        run: npm run build
+        working-directory: frontend
         shell: pwsh
 
       - name: Save frontend artifact
@@ -99,7 +93,7 @@ jobs:
           name: frontend-artifact
           path: frontend/build/
 
-  # === Déploiement ===
+  # === Déploiement === 
   deploy:
     needs: [build-backend, build-frontend]
     runs-on: windows-latest
@@ -125,7 +119,7 @@ jobs:
           # Ajoute ici ton script de déploiement
         shell: pwsh
 
-  # === Monitoring avec Docker Compose ===
+  # === Monitoring avec Docker Compose === 
   monitoring:
     needs: deploy
     runs-on: windows-latest
