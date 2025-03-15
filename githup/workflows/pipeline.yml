@@ -1,0 +1,141 @@
+name: CI/CD for Full-Stack App (Windows)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # === Tests Backend ===
+  test-backend:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install
+        shell: pwsh
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm test
+        shell: pwsh
+
+  # === Tests Frontend ===
+  test-frontend:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+        shell: pwsh
+
+      - name: Run frontend tests (Cypress)
+        run: |
+          cd frontend
+          npm run test
+        shell: pwsh
+
+  # === Build Backend ===
+  build-backend:
+    needs: test-backend
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build backend
+        run: |
+          cd backend
+          npm run build
+        shell: pwsh
+
+      - name: Save backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-artifact
+          path: backend/dist/
+
+  # === Build Frontend ===
+  build-frontend:
+    needs: test-frontend
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+        shell: pwsh
+
+      - name: Save frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-artifact
+          path: frontend/build/
+
+  # === Déploiement ===
+  deploy:
+    needs: [build-backend, build-frontend]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-artifact
+          path: backend/dist/
+
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-artifact
+          path: frontend/build/
+
+      - name: Deploy application
+        run: |
+          echo "Déploiement en cours..."
+          # Ajoute ici ton script de déploiement
+        shell: pwsh
+
+  # === Monitoring avec Docker Compose ===
+  monitoring:
+    needs: deploy
+    runs-on: windows-latest
+    steps:
+      - name: Install Docker
+        run: |
+          choco install docker-desktop -y
+        shell: pwsh
+
+      - name: Start Prometheus & Grafana
+        run: |
+          docker-compose -f docker-compose.monitoring.yml up -d
+        shell: pwsh
