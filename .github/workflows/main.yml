@@ -1,3 +1,4 @@
+
 name: CI/CD Pipeline
 
 on:
@@ -10,59 +11,62 @@ jobs:
   # Phase de test et build
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
+    - uses: actions/checkout@v3
+    
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        cache: 'npm'
-
+        
     # Installation et tests Backend
     - name: Install backend dependencies
-      working-directory: backend
-      run: npm ci
-
-    - name: Fix permissions (Jest issue)
-      working-directory: backend
-      run: chmod +x node_modules/.bin/jest
-
+      run: |
+        cd backend
+        npm install
+        
     - name: Run backend tests
-      working-directory: backend
-      run: npm test
-
+      run: |
+        cd backend
+        npm test
+      
     # Installation et tests Frontend
     - name: Install frontend dependencies
-      working-directory: frontend
-      run: npm ci
-
+      run: |
+        cd frontend
+        npm install
+        
     - name: Run frontend tests
-      working-directory: frontend
-      run: npm test -- --watchAll=false
-
+      run: |
+        cd frontend
+        npm test -- --watchAll=false
+        
     # Build de l'application
     - name: Build frontend
-      working-directory: frontend
-      run: npm run build
-
+      run: |
+        cd frontend
+        npm run build
+        
     # Création de l'image Docker
     - name: Build Docker image
       run: docker build -t gestion-etablissement:latest .
-
+      
     # Déploiement en environnement de développement (Docker local)
     - name: Deploy to Dev
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-      run: echo "Deployment to Dev environment successful"
-
+      run: |
+        # Simuler un déploiement en environnement de dev
+        echo "Deployment to Dev environment successful"
+        
   # Déploiement en production (simplifié)
   deploy-prod:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-
+    
     steps:
     - name: Deploy to Production
-      run: echo "Deployment to Production environment successful"
+      run: |
+        # Pour l'instant, simulons le déploiement
+        echo "Deployment to Production environment successful"
