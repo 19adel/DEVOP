@@ -7,48 +7,65 @@ on:
     branches: [ main, master ]
 
 jobs:
+  # Phase de test et build
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
     - uses: actions/checkout@v3
-
+    
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18.20.7'
-        cache: 'npm'
-
-    # Installation des dépendances Backend avec npm install
+        node-version: '18'
+        
+    # Installation et tests Backend
     - name: Install backend dependencies
       run: |
         cd backend
         npm install
-
+        
     - name: Run backend tests
       run: |
         cd backend
-        npx jest --passWithNoTests
-
-    # Installation des dépendances Frontend avec npm install
+        npm test
+      
+    # Installation et tests Frontend
     - name: Install frontend dependencies
       run: |
         cd frontend
         npm install
-
+        
     - name: Run frontend tests
       run: |
         cd frontend
         npm test -- --watchAll=false
-
+        
+    # Build de l'application
     - name: Build frontend
       run: |
         cd frontend
         npm run build
-
+        
+    # Création de l'image Docker
     - name: Build Docker image
       run: docker build -t gestion-etablissement:latest .
-
+      
+    # Déploiement en environnement de développement (Docker local)
     - name: Deploy to Dev
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-      run: echo "Deployment to Dev environment successful"
+      run: |
+        # Simuler un déploiement en environnement de dev
+        echo "Deployment to Dev environment successful"
+        
+  # Déploiement en production (simplifié)
+  deploy-prod:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Deploy to Production
+      run: |
+        # Pour l'instant, simulons le déploiement
+        echo "Deployment to Production environment successful"
